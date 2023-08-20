@@ -1,26 +1,19 @@
 const express = require('express');
-const sql = require('mssql/msnodesqlv8');
+const dbConnection = require('./dbConnection'); // Path to dbConnection.js
+const orderRoute = require('./route/OrderRoute'); // Path to OrderRoute.js
 
 const app = express();
 
 const PORT = 3002;
 
-// Database configuration
-var dbConfig = { 
-  server: "localhost",   
-  database: 'Order',
-  driver: 'msnodesqlv8',
-  options: {
-    trustedConnection: true, // Use Windows authentication       
-  },
-};
+// Establish database connection
+dbConnection.connectToDatabase();
 
-// Establish a connection pool
-sql.connect(dbConfig)
-  .then(() => console.log('Connected to the database'))
-  .catch(err => console.error('Database connection failed', err));
+// Add middleware to parse JSON requests
+app.use(express.json());
 
- 
+// Use order routes
+app.use('/api', orderRoute);
 
 app.listen(PORT, () => {
   console.log(`MicroserviceB listening on port ${PORT}`);
