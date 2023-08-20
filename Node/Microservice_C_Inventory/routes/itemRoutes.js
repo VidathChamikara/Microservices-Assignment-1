@@ -28,15 +28,15 @@ router.get('/getAllItems',(req,res) => {
     });
   });
 
-  router.get('/getItem',(req,res) => {
-    const id = req.query.id;
+  router.get('/getItem/:id',(req,res) => {
+    const id = req.params.id;
     itemController.getItem(id,(result) => {
         res.send({status:200,data:result});
     });
   });
 
-  router.put('/updateItem',(req,res) => {
-    const id = req.body.iditem;
+  router.put('/updateItem/:id',(req,res) => {
+    const id = req.params.id;
     Item.name = req.body.name;
     Item.type = req.body.type;
     Item.price = req.body.price;
@@ -53,8 +53,8 @@ router.get('/getAllItems',(req,res) => {
     
   });
 
-  router.delete('/deleteItem',(req,res) => {
-    const id = req.query.id;
+  router.delete('/deleteItem/:id',(req,res) => {
+    const id = req.params.id;
     itemController.deleteItem(id,(result) => {
         res.send({status:200,data:result});
     });
