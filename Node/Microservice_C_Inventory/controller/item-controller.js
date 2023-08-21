@@ -21,7 +21,6 @@ const addItem = (req, res) => {
                 if (err) {
                     console.log(err);
                 }
-                cb(result);
             });
             connection.release();
         });
