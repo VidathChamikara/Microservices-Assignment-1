@@ -47,7 +47,7 @@ async function createOrder(req, res) {
 
     const result = await pool.request()
       
-      .input('user_id', sql.Int, user_id)//check the user acccording user table
+      .input('user_id', sql.Int, user_id)//check the user_id acccording user table
       .input('order_date', sql.DateTime, order_date)
       .input('total_amount', sql.Decimal(10, 2), total_amount)
       .input('status', sql.VarChar(20), status)

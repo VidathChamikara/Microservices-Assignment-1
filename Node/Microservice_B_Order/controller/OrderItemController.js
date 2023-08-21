@@ -52,8 +52,8 @@ async function getOrderItems(req, res) {
         VALUES (@order_id, @product_id, @quantity, @unit_price, @subtotal);
       `;
       await pool.request()
-        .input('order_id', sql.Int, order_id)
-        .input('product_id', sql.Int, product_id)
+        .input('order_id', sql.Int, order_id) 
+        .input('product_id', sql.Int, product_id)// check the valid product_id according to inventory
         .input('quantity', sql.Int, quantity)
         .input('unit_price', sql.Decimal(10, 2), unit_price)
         .input('subtotal', sql.Decimal(10, 2), subtotal)
@@ -74,11 +74,19 @@ async function getOrderItems(req, res) {
       const pool = await sql.connect(dbConnection);
   
       // Check if the item exists before attempting to update
-      const checkQuery = `SELECT COUNT(*) AS itemCount FROM OrderItems WHERE item_id = @item_id;`;
-      const checkResult = await pool.request().input('item_id', sql.Int, item_id).query(checkQuery);
+      const checkItemQuery = `SELECT COUNT(*) AS itemCount FROM OrderItems WHERE item_id = @item_id;`;
+      const checkItemResult = await pool.request().input('item_id', sql.Int, item_id).query(checkItemQuery);
   
-      if (checkResult.recordset[0].itemCount === 0) {
+      if (checkItemResult.recordset[0].itemCount === 0) {
         return res.status(404).json({ error: 'Order item not found' });
+      }
+  
+      // Check if the associated order exists before updating the item
+      const checkOrderQuery = `SELECT COUNT(*) AS orderCount FROM Orders WHERE order_id = @order_id;`;
+      const checkOrderResult = await pool.request().input('order_id', sql.Int, order_id).query(checkOrderQuery);
+  
+      if (checkOrderResult.recordset[0].orderCount === 0) {
+        return res.status(404).json({ error: 'Order not found for the given order_id' });
       }
   
       // Update the item
@@ -103,6 +111,7 @@ async function getOrderItems(req, res) {
       res.status(500).json({ error: 'Error updating order item' });
     }
   }
+  
   
   
   async function deleteOrderItem(req, res) {
