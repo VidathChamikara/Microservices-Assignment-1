@@ -38,18 +38,26 @@ async function getOrderItems(req, res) {
       const { order_id, product_id, quantity, unit_price, subtotal } = req.body;
       const pool = await sql.connect(dbConnection);
   
-      const query = `
+      // Check if the order exists before creating the order item
+      const checkOrderQuery = `SELECT COUNT(*) AS orderCount FROM Orders WHERE order_id = @order_id;`;
+      const checkOrderResult = await pool.request().input('order_id', sql.Int, order_id).query(checkOrderQuery);
+  
+      if (checkOrderResult.recordset[0].orderCount === 0) {
+        return res.status(404).json({ error: 'Order not found for the given order_id' });
+      }
+  
+      // Create the order item
+      const insertQuery = `
         INSERT INTO OrderItems (order_id, product_id, quantity, unit_price, subtotal)
         VALUES (@order_id, @product_id, @quantity, @unit_price, @subtotal);
       `;
-  
-      const result = await pool.request()
+      await pool.request()
         .input('order_id', sql.Int, order_id)
         .input('product_id', sql.Int, product_id)
         .input('quantity', sql.Int, quantity)
         .input('unit_price', sql.Decimal(10, 2), unit_price)
         .input('subtotal', sql.Decimal(10, 2), subtotal)
-        .query(query);
+        .query(insertQuery);
   
       res.json({ message: 'Order item created successfully' });
     } catch (error) {
@@ -58,27 +66,36 @@ async function getOrderItems(req, res) {
     }
   }
   
+  
   async function updateOrderItem(req, res) {
     try {
-      const item_id = req.params.itemId;  // Assuming you're using item_id as the identifier
+      const item_id = req.params.itemId;
       const { order_id, product_id, quantity, unit_price, subtotal } = req.body;
       const pool = await sql.connect(dbConnection);
-      
-      const query = `
+  
+      // Check if the item exists before attempting to update
+      const checkQuery = `SELECT COUNT(*) AS itemCount FROM OrderItems WHERE item_id = @item_id;`;
+      const checkResult = await pool.request().input('item_id', sql.Int, item_id).query(checkQuery);
+  
+      if (checkResult.recordset[0].itemCount === 0) {
+        return res.status(404).json({ error: 'Order item not found' });
+      }
+  
+      // Update the item
+      const updateQuery = `
         UPDATE OrderItems
         SET order_id = @order_id, product_id = @product_id, quantity = @quantity,
             unit_price = @unit_price, subtotal = @subtotal
         WHERE item_id = @item_id;
       `;
-  
-      const result = await pool.request()
+      await pool.request()
         .input('order_id', sql.Int, order_id)
         .input('product_id', sql.Int, product_id)
         .input('quantity', sql.Int, quantity)
         .input('unit_price', sql.Decimal(10, 2), unit_price)
         .input('subtotal', sql.Decimal(10, 2), subtotal)
         .input('item_id', sql.Int, item_id)
-        .query(query);
+        .query(updateQuery);
   
       res.json({ message: 'Order item updated successfully' });
     } catch (error) {
@@ -87,19 +104,30 @@ async function getOrderItems(req, res) {
     }
   }
   
+  
   async function deleteOrderItem(req, res) {
     try {
-      const item_id = req.params.itemId;  // Assuming you're using item_id as the identifier
+      const item_id = req.params.itemId;
       const pool = await sql.connect(dbConnection);
-      
-      const result = await pool.request().input('item_id', sql.Int, item_id)
-        .query(`DELETE FROM OrderItems WHERE item_id = @item_id;`);
+  
+      // Check if the item exists before attempting to delete
+      const checkQuery = `SELECT COUNT(*) AS itemCount FROM OrderItems WHERE item_id = @item_id;`;
+      const checkResult = await pool.request().input('item_id', sql.Int, item_id).query(checkQuery);
+  
+      if (checkResult.recordset[0].itemCount === 0) {
+        return res.status(404).json({ error: 'Order item not found' });
+      }
+  
+      // Delete the item
+      const deleteQuery = `DELETE FROM OrderItems WHERE item_id = @item_id;`;
+      await pool.request().input('item_id', sql.Int, item_id).query(deleteQuery);
   
       res.json({ message: 'Order item deleted successfully' });
     } catch (error) {
       res.status(500).json({ error: 'Error deleting order item' });
     }
   }
+  
   
 
   module.exports = {

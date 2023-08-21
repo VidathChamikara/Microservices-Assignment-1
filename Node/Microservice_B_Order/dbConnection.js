@@ -14,9 +14,9 @@ const dbConfig = {
 async function connectToDatabase() {
   try {
     await sql.connect(dbConfig);
-    console.log('Connected to the database');
+    console.log('Connected to the mssql database');
   } catch (err) {
-    console.error('Database connection failed', err);
+    console.error('Database connection failed to mssql', err);
   }
 }
 
