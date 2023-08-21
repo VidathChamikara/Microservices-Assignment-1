@@ -1,72 +1,96 @@
 const dbConn = require('../dbConnection');
+const Item = require('../model/item-model');
 
-const addItem = (item,cb) => {
-    dbConn.getConnection((connection) => {
-        connection.query('INSERT INTO item (name,type,price,quantity,enteredBy) VALUES (?,?,?,?,?)', [item.name,item.type,item.price,item.quantity,item.enteredBy], (err, result) => {
-            if (err) {
-                console.log(err);
-            }
-            cb(result);
+var id = 0;
+var name = Item.name;
+var type = Item.type;
+var price = Item.price;
+var quantity = Item.quantity;
+var enteredBy = Item.enteredBy;
+
+const addItem = (req, res) => {
+    name = req.body.name;
+    type = req.body.type;
+    price = req.body.price;
+    quantity = req.body.quantity;
+    enteredBy = req.body.enteredBy;
+
+    if (name && type && price && quantity && enteredBy) {
+        dbConn.getConnection((connection) => {
+            connection.query('INSERT INTO item (name,type,price,quantity,enteredBy) VALUES (?,?,?,?,?)', [name, type, price, quantity, enteredBy], (err, result) => {
+                if (err) {
+                    console.log(err);
+                }
+            });
+            connection.release();
         });
-        connection.release();
-    });
+        res.send({ status: 200, message: "Item added successfully" });
+    }
+    else {
+        res.send({ status: 400, message: "Invalid data" });
+    }
+
 }
 
-const getAllItems = (cb) => {
+
+const getAllItems = (req, res) => {
     dbConn.getConnection((connection) => {
         connection.query('SELECT * FROM item', (err, result) => {
             if (err) {
                 console.log(err);
-            }
-            cb(result);
+            }else{
+                res.send({ status: 200, data: result });
+            } 
         });
         connection.release();
     });
 }
 
-const getItem = (id,cb) => {
+const getItem = (req, res) => {
+    id = req.query.id;
     dbConn.getConnection((connection) => {
-        connection.query('SELECT * FROM item WHERE iditem = ?',[id], (err, result) => {
+        connection.query('SELECT * FROM item WHERE iditem = ?', [id], (err, result) => {
+            if (err) {
+                console.log(err);
+            }else{
+                res.send({ status: 200, data: result });
+            }
+        });
+        connection.release();
+    });
+}
+
+
+const updateItem = (req, res) => {
+    id = req.body.iditem;
+    name = req.body.name;
+    type = req.body.type;
+    price = req.body.price;
+    quantity = req.body.quantity;
+    enteredBy = req.body.enteredBy;
+    if (id && name && type && price && quantity && enteredBy) {
+    dbConn.getConnection((connection) => {
+        connection.query('UPDATE item SET name = ?,type = ?,price = ?,quantity = ?,enteredBy = ? WHERE iditem = ?', [name, type, price, quantity, enteredBy, id], (err, result) => {
             if (err) {
                 console.log(err);
             }
-            cb(result);
+            res.send({ status: 200, data: result });
         });
         connection.release();
-    });
+    });}
+    else {
+        res.send({ status: 400, message: "Invalid data" });
+    }
 }
 
-const upDateItem = (id,cb) => {
-    dbConn.getConnection((connection) => {
-        connection.query('SELECT * FROM item WHERE iditem = ?',[id], (err, result) => {
-            if (err) {
-                console.log(err);
-            }
-            cb(result);
-        });
-        connection.release();
-    });
-}
-
-const updateItem = (id,item,cb) => {
-    dbConn.getConnection((connection) => {
-        connection.query('UPDATE item SET name = ?,type = ?,price = ?,quantity = ?,enteredBy = ? WHERE iditem = ?', [item.name,item.type,item.price,item.quantity,item.enteredBy,id], (err, result) => {
-            if (err) {
-                console.log(err);
-            }
-            cb(result);
-        });
-        connection.release();
-    });
-}
-
-const deleteItem = (id,cb) => {
+const deleteItem = (req,res) => {
+    id = req.query.id;
     dbConn.getConnection((connection) => {
         connection.query('DELETE FROM item  WHERE iditem = ?', [id], (err, result) => {
             if (err) {
                 console.log(err);
             }
-            cb(result);
+            res.send({ status: 200, data: result });
         });
         connection.release();
     });

@@ -1,6 +1,5 @@
 const express = require("express");
 const itemController = require('../controller/item-controller');
-const Item = require('../model/item-model');
 
 const router = express.Router();
 router.post('/addItem',(req,res) => {
@@ -28,15 +27,15 @@ router.get('/getAllItems',(req,res) => {
     });
   });
 
-  router.get('/getItem/:id',(req,res) => {
-    const id = req.params.id;
+  router.get('/getItem',(req,res) => {
+    const id = req.query.id;
     itemController.getItem(id,(result) => {
         res.send({status:200,data:result});
     });
   });
 
-  router.put('/updateItem/:id',(req,res) => {
-    const id = req.params.id;
+  router.put('/updateItem',(req,res) => {
+    const id = req.body.iditem;
     Item.name = req.body.name;
     Item.type = req.body.type;
     Item.price = req.body.price;
@@ -53,12 +52,12 @@ router.get('/getAllItems',(req,res) => {
     
   });
 
-  router.delete('/deleteItem/:id',(req,res) => {
-    const id = req.params.id;
+  router.delete('/deleteItem',(req,res) => {
+    const id = req.query.id;
     itemController.deleteItem(id,(result) => {
         res.send({status:200,data:result});
     });
   });
 
 module.exports = router;
- 
+
