@@ -1,7 +1,7 @@
 const dbConn = require('../dbConnection');
 const Item = require('../model/item-model');
 
-var id = 0;
+
 var name = Item.name;
 var type = Item.type;
 var price = Item.price;
@@ -47,7 +47,7 @@ const getAllItems = (req, res) => {
 }
 
 const getItem = (req, res) => {
-    id = req.query.id;
+    id = req.params.id;
     dbConn.getConnection((connection) => {
         connection.query('SELECT * FROM item WHERE iditem = ?', [id], (err, result) => {
             if (err) {
@@ -62,7 +62,7 @@ const getItem = (req, res) => {
 
 
 const updateItem = (req, res) => {
-    id = req.body.iditem;
+    id = req.params.id;
     name = req.body.name;
     type = req.body.type;
     price = req.body.price;
@@ -74,7 +74,7 @@ const updateItem = (req, res) => {
             if (err) {
                 console.log(err);
             }
-            res.send({ status: 200, data: result });
+            res.send({ status: 200, data: result, message:"Item updated successfully"});
         });
         connection.release();
     });}
@@ -84,13 +84,13 @@ const updateItem = (req, res) => {
 }
 
 const deleteItem = (req,res) => {
-    id = req.query.id;
+    id = req.params.id;
     dbConn.getConnection((connection) => {
         connection.query('DELETE FROM item  WHERE iditem = ?', [id], (err, result) => {
             if (err) {
                 console.log(err);
             }
-            res.send({ status: 200, data: result });
+            res.send({ status: 200, data: result, message:"Item deleted successfully"});
         });
         connection.release();
     });
