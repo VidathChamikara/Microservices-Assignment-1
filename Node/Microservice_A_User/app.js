@@ -7,17 +7,21 @@ const bodyParser = require('body-parser')
 const PORT = 3001;
 app.use(bodyParser.json());
 
-mongoose.connect('mongodb://127.0.0.1:27017/userManagement').then(()=>{
-  app.listen(PORT , ()=>{
-    console
-        .log(`MicroserviceA listening on port ${PORT}`);
+mongoose.connect('mongodb://127.0.0.1:27017/userManagement')
+  .then(() => {
+    console.log("Successfully Connected to the MongoDB Database");
+  })
+  .catch(error => {
+    console.log("MongoDB connection error", error);
   });
-}).catch(error=>{
-  console.log("connect error",error);
-});
 
 app.use('/api/v1/user', UserRoute); //http://localhost:3001/api/v1/user
 
-module.exports = app; // Export the app instance
+app.listen(PORT, () => {
+  console.log(`MicroserviceB listening on port ${PORT}`);
+});
+
+// Export the app instance
+module.exports = app;
 
 
