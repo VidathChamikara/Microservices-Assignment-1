@@ -4,8 +4,16 @@ let pool = mysql.createPool({
     connectionLimit: 50,
     host: 'localhost',
     user: 'root',
-    password: 'root',
+    password: 'Vidath123#',
     database: 'inventory'
+});
+
+pool.getConnection(function (err, connection) {
+    if (err) {
+        return console.error('error: ' + err.message);
+    }
+    console.log('Successfully connected to the MySQL database');
+    connection.release();
 });
 
 const getConnection = (cb) => {
@@ -13,10 +21,10 @@ const getConnection = (cb) => {
         if (err) {
             return console.error('error: ' + err.message);
         }
-        if(cb){
+        if (cb) {
             cb(connection);
         }
     });
-    };
+};
 
-module.exports = {getConnection};
+module.exports = { getConnection };
