@@ -5,7 +5,7 @@ const routes = require('./routes/itemRoutes');
 
 
 app.listen(PORT, () => {
-  console.log(`MicroserviceC listening on port ${PORT}`);
+  console.log(`Microservice_C_Inventory listening on port ${PORT}`);
 });
 
 app.use(express.json());

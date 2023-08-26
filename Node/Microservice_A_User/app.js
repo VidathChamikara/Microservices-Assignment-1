@@ -18,7 +18,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/userManagement')
 app.use('/api/v1/user', UserRoute); //http://localhost:3001/api/v1/user
 
 app.listen(PORT, () => {
-  console.log(`MicroserviceB listening on port ${PORT}`);
+  console.log(`Microservice_A_User listening on port ${PORT}`);
 });
 
 // Export the app instance

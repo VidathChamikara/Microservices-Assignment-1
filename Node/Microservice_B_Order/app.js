@@ -18,7 +18,7 @@ app.use('/api', orderRoute);
 app.use('/api', orderItemRoute);
 
 app.listen(PORT, () => {
-  console.log(`MicroserviceB listening on port ${PORT}`);
+  console.log(`Microservice_B_Order listening on port ${PORT}`);
 });
 
 module.exports = app; // Export the app instance
