@@ -1,6 +1,6 @@
 const sql = require('mssql/msnodesqlv8');
 const dbConnection = require('../dbConnection'); // Path to dbConnection.js
-
+const axios = require('axios');
 
 async function getOrderItems(req, res) {
     try {
@@ -46,23 +46,37 @@ async function getOrderItems(req, res) {
         return res.status(404).json({ error: 'Order not found for the given order_id' });
       }
   
-      // Create the order item
-      const insertQuery = `
-        INSERT INTO OrderItems (order_id, product_id, quantity, unit_price, subtotal)
-        VALUES (@order_id, @product_id, @quantity, @unit_price, @subtotal);
-      `;
-      await pool.request()
-        .input('order_id', sql.Int, order_id) 
-        .input('product_id', sql.Int, product_id)// check the valid product_id according to inventory
-        .input('quantity', sql.Int, quantity)
-        .input('unit_price', sql.Decimal(10, 2), unit_price)
-        .input('subtotal', sql.Decimal(10, 2), subtotal)
-        .query(insertQuery);
+      const inventoryUpdateEndpoint = `http://localhost:3003/api/updateItemQuantity/${product_id}`;
+      const inventoryUpdateData = {
+        quantity: quantity, // Reduce the quantity in inventory
+      };
   
-      res.json({ message: 'Order item created successfully' });
+      try {
+        // Update inventory
+        await axios.patch(inventoryUpdateEndpoint, inventoryUpdateData);
+  
+        // Inventory update successful, proceed to create the order item
+        const insertQuery = `
+          INSERT INTO OrderItems (order_id, product_id, quantity, unit_price, subtotal)
+          VALUES (@order_id, @product_id, @quantity, @unit_price, @subtotal);
+        `;
+        await pool.request()
+          .input('order_id', sql.Int, order_id)
+          .input('product_id', sql.Int, product_id) // check the valid product_id according to inventory
+          .input('quantity', sql.Int, quantity)
+          .input('unit_price', sql.Decimal(10, 2), unit_price)
+          .input('subtotal', sql.Decimal(10, 2), subtotal)
+          .query(insertQuery);
+  
+        res.json({ message: 'Order item created successfully' });
+      } catch (inventoryError) {
+        // If an error occurred during inventory update, handle it and respond accordingly
+        console.error(inventoryError);
+        res.status(500).json({ error: `Error updating inventory: ${inventoryError.message}` });
+      }
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: 'Error creating order item' });
+      res.status(500).json({ error: `Error creating order item: ${error.message}` });
     }
   }
   

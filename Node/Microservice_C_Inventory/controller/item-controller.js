@@ -83,6 +83,51 @@ const updateItem = (req, res) => {
     }
 }
 
+const updateItemQuantity = (req, res, errorCallback) => {
+    const id = req.params.id;
+
+    if (id) {
+        dbConn.getConnection((connection) => {
+            // Get the current quantity of the item in the inventory
+            connection.query('SELECT quantity FROM item WHERE iditem = ?', [id], (err, result) => {
+                if (err) {
+                    console.log(err);
+                    errorCallback("Error getting item quantity"); // Call the errorCallback with the error message
+                    connection.release();
+                    return;
+                }
+
+                if (result.length === 0) {
+                    errorCallback("Product not found"); // Call the errorCallback with the error message
+                    connection.release();
+                    return;
+                }
+
+                const currentQuantity = result[0].quantity;
+                let requestedQuantity = req.body.quantity; // Update the quantity based on the operation (e.g., reduce)
+
+                // Ensure that the requested quantity doesn't exceed the available quantity
+                requestedQuantity = Math.min(requestedQuantity, currentQuantity);
+
+                const newQuantity = currentQuantity - requestedQuantity;
+
+                connection.query('UPDATE item SET quantity = ? WHERE iditem = ?', [newQuantity, id], (err, updateResult) => {
+                    if (err) {
+                        console.log(err);
+                        errorCallback("Error updating item quantity"); // Call the errorCallback with the error message
+                    } else {
+                        res.status(200).send({ status: 200, data: updateResult, message: "Item quantity updated successfully" });
+                    }
+                });
+
+                connection.release();
+            });
+        });
+    } else {
+        errorCallback("Invalid data"); // Call the errorCallback with the error message
+    }
+}
+
 const deleteItem = (req,res) => {
     id = req.params.id;
     dbConn.getConnection((connection) => {
@@ -100,4 +145,5 @@ exports.addItem = addItem;
 exports.getAllItems = getAllItems;
 exports.getItem = getItem;
 exports.updateItem = updateItem;
+exports.updateItemQuantity = updateItemQuantity;
 exports.deleteItem = deleteItem;
