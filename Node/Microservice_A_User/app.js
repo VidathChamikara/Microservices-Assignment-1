@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const app = express();
-const UserRoute = require('./route/UserRoute');
+const UserRoute = require('./route/userRoute');
 const bodyParser = require('body-parser')
 
 const PORT = 3001;
@@ -15,7 +15,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/userManagement')
     console.log("MongoDB connection error", error);
   });
 
-app.use('/api/v1/user', UserRoute); //http://localhost:3001/api/v1/user
+app.use('/api/user', UserRoute); //http://localhost:3001/api/v1/user
 
 app.listen(PORT, () => {
   console.log(`Microservice_A_User listening on port ${PORT}`);

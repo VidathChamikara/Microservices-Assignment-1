@@ -9,6 +9,6 @@ app.listen(PORT, () => {
 });
 
 app.use(express.json());
-app.use("/api",routes);
+app.use("/api/inventory",routes);
 
 module.exports = app; // Export the app instance
