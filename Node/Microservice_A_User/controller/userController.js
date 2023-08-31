@@ -9,6 +9,7 @@ const saveUser=(req,resp)=>{
         id:req.body.id,
         name:req.body.name,
         role:req.body.role,
+        email:req.body.email,
         password:hashedPassword,
         address:req.body.address
     });
@@ -18,6 +19,7 @@ const saveUser=(req,resp)=>{
         resp.status(500).json(error);
     });
 }
+
 const updateUser=(req,resp)=>{
     const {password} = req.body;
     const hashAlgorithm = 'sha512';
@@ -25,6 +27,7 @@ const updateUser=(req,resp)=>{
     User.updateOne({id:req.body.id},{
         name:req.body.name,
         role:req.body.role,
+        email:req.body.email,
         password:hashedPassword,
         address:req.body.address
     }).then(result=>{
@@ -62,6 +65,7 @@ const searchUser=(req,resp)=>{
             {id:{$regex:req.headers.text, $options:'i' }},
             {name:{$regex:req.headers.text, $options:'i' }},
             {role:{$regex:req.headers.text, $options:'i' }},
+            {email:{$regex:req.headers.text, $options:'i' }},
             {password:{$regex:req.headers.text, $options:'i' }},
             {address:{$regex:req.headers.text, $options:'i' }}
 
