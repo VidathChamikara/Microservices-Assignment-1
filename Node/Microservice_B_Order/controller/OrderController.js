@@ -14,8 +14,6 @@ async function getOrders(req, res) {
     }
   }
 
-
-
 // Controller function to get a single order by ID
 async function getOrderById(req, res) {
     try {
@@ -33,8 +31,7 @@ async function getOrderById(req, res) {
     } catch (error) {
       res.status(500).json({ error: 'Error fetching order' });
     }
-  } 
-  
+  }   
 
 // Controller function to create an order
 async function createOrder(req, res) {

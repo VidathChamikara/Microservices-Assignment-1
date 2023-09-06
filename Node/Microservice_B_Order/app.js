@@ -14,8 +14,8 @@ dbConnection.connectToDatabase();
 app.use(express.json());
 
 // Use order routes
-app.use('/api', orderRoute);
-app.use('/api', orderItemRoute);
+app.use('/api/order', orderRoute);
+app.use('/api/orderItem', orderItemRoute);
 
 app.listen(PORT, () => {
   console.log(`Microservice_B_Order listening on port ${PORT}`);
