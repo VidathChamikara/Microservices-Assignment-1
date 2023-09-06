@@ -46,7 +46,7 @@ async function getOrderItems(req, res) {
         return res.status(404).json({ error: 'Order not found for the given order_id' });
       }
   
-      const inventoryUpdateEndpoint = `http://localhost:3003/api/updateItemQuantity/${product_id}`;
+      const inventoryUpdateEndpoint = `http://localhost:3003/api/inventory/updateItemQuantity/${product_id}`;
       const inventoryUpdateData = {
         quantity: quantity, // Reduce the quantity in inventory
       };
