@@ -16,22 +16,71 @@ async function getOrders(req, res) {
 
 // Controller function to get a single order by ID
 async function getOrderById(req, res) {
-    try {
+  try {
       const order_id = req.params.orderId;
       const pool = await sql.connect(dbConnection);
-      
-      const result = await pool.request().input('order_id', sql.Int, order_id)
-        .query(`SELECT * FROM ${OrderSchema.name} WHERE order_id = @order_id;`);
-  
+
+      // Modify the SQL query to join Orders and OrderItems tables and filter by order_id
+      const query = `
+          SELECT
+              o.[order_id],
+              o.[user_id],
+              o.[order_date],
+              o.[total_amount],
+              o.[status],
+              o.[payment_status],
+              o.[shipping_address],
+              i.[item_id],
+              i.[product_id],
+              i.[quantity],
+              i.[unit_price],
+              i.[subtotal]
+          FROM [Order].[dbo].[Orders] AS o
+          INNER JOIN [Order].[dbo].[OrderItems] AS i ON o.[order_id] = i.[order_id]
+          WHERE o.[order_id] = @order_id
+      `;
+
+      const result = await pool.request()
+          .input('order_id', sql.Int, order_id)
+          .query(query);
+
       if (result.recordset.length === 0) {
-        res.status(404).json({ message: 'Order not found' });
+          res.status(404).json({ message: 'Order not found' });
       } else {
-        res.json(result.recordset[0]);
+          // Process the result as needed and send it as a JSON response
+          // (similar to the previous response structure)
+          // ...
+
+          // Create an object to hold the order details and order items
+          const orderDetails = {
+              order_id: result.recordset[0].order_id,
+              user_id: result.recordset[0].user_id,
+              order_date: result.recordset[0].order_date,
+              total_amount: result.recordset[0].total_amount,
+              status: result.recordset[0].status,
+              payment_status: result.recordset[0].payment_status,
+              shipping_address: result.recordset[0].shipping_address,
+              order_items: [],
+          };
+
+          // Iterate through the result set and add order items to the orderDetails object
+          result.recordset.forEach((row) => {
+              orderDetails.order_items.push({
+                  item_id: row.item_id,
+                  product_id: row.product_id,
+                  quantity: row.quantity,
+                  unit_price: row.unit_price,
+                  subtotal: row.subtotal,
+              });
+          });
+
+          res.json(orderDetails);
       }
-    } catch (error) {
+  } catch (error) {
       res.status(500).json({ error: 'Error fetching order' });
-    }
-  }   
+  }
+}
+
 
 // Controller function to create an order
 async function createOrder(req, res) {

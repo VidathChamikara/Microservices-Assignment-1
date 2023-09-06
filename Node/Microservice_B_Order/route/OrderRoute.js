@@ -4,8 +4,8 @@ const orderController = require('../controller/OrderController'); // Path to Ord
 const router = express.Router();
 
 // Define routes
-router.get('/get', orderController.getOrders);
-router.get('/getAll/:orderId', orderController.getOrderById);
+router.get('/getAll', orderController.getOrders);
+router.get('/get/:orderId', orderController.getOrderById);
 router.post('/create', orderController.createOrder);
 router.put('/update/:orderId', orderController.updateOrder);
 router.delete('/delete/:orderId', orderController.deleteOrder);
