@@ -107,7 +107,11 @@ const updateItemQuantity = (req, res, errorCallback) => {
                 let requestedQuantity = req.body.quantity; // Update the quantity based on the operation (e.g., reduce)
 
                 // Ensure that the requested quantity doesn't exceed the available quantity
-                requestedQuantity = Math.min(requestedQuantity, currentQuantity);
+                if (requestedQuantity > currentQuantity) {
+                    errorCallback("Not enough quantity available to purchase"); // Call the errorCallback with the error message
+                    connection.release();
+                    return;
+                }
 
                 const newQuantity = currentQuantity - requestedQuantity;
 

@@ -35,12 +35,15 @@ async function getOrderItems(req, res) {
   
   async function createOrderItem(req, res) {
     try {
-      const { order_id, product_id, quantity, unit_price, subtotal } = req.body;
+      const { order_id, product_id, quantity, unit_price } = req.body;
       const pool = await sql.connect(dbConnection);
   
       // Check if the order exists before creating the order item
       const checkOrderQuery = `SELECT COUNT(*) AS orderCount FROM Orders WHERE order_id = @order_id;`;
-      const checkOrderResult = await pool.request().input('order_id', sql.Int, order_id).query(checkOrderQuery);
+      const checkOrderResult = await pool
+        .request()
+        .input('order_id', sql.Int, order_id)
+        .query(checkOrderQuery);
   
       if (checkOrderResult.recordset[0].orderCount === 0) {
         return res.status(404).json({ error: 'Order not found for the given order_id' });
@@ -55,12 +58,16 @@ async function getOrderItems(req, res) {
         // Update inventory
         await axios.patch(inventoryUpdateEndpoint, inventoryUpdateData);
   
+        // Calculate subtotal
+        const subtotal = quantity * unit_price;
+  
         // Inventory update successful, proceed to create the order item
         const insertQuery = `
           INSERT INTO OrderItems (order_id, product_id, quantity, unit_price, subtotal)
           VALUES (@order_id, @product_id, @quantity, @unit_price, @subtotal);
         `;
-        await pool.request()
+        await pool
+          .request()
           .input('order_id', sql.Int, order_id)
           .input('product_id', sql.Int, product_id) // check the valid product_id according to inventory
           .input('quantity', sql.Int, quantity)
@@ -79,6 +86,7 @@ async function getOrderItems(req, res) {
       res.status(500).json({ error: `Error creating order item: ${error.message}` });
     }
   }
+  
   
   
   async function updateOrderItem(req, res) {
