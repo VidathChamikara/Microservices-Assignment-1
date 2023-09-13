@@ -59,6 +59,19 @@ const getItem = (req, res) => {
         connection.release();
     });
 }
+const getUnitPrice = (req, res) => {
+    id = req.params.product_id;
+    dbConn.getConnection((connection) => {
+        connection.query('SELECT price FROM item WHERE iditem = ?', [id], (err, result) => {
+            if (err) {
+                console.log(err);
+            }else{
+                res.send({ status: 200, data: result });
+            }
+        });
+        connection.release();
+    });
+}
 
 
 const updateItem = (req, res) => {
@@ -83,7 +96,7 @@ const updateItem = (req, res) => {
     }
 }
 
-const updateItemQuantity = (req, res, errorCallback) => {
+const updateItemQuantity = (req, res) => {
     const id = req.params.id;
 
     if (id) {
@@ -91,16 +104,15 @@ const updateItemQuantity = (req, res, errorCallback) => {
             // Get the current quantity of the item in the inventory
             connection.query('SELECT quantity FROM item WHERE iditem = ?', [id], (err, result) => {
                 if (err) {
-                    console.log(err);
-                    errorCallback("Error getting item quantity"); // Call the errorCallback with the error message
+                    console.error(err);
                     connection.release();
-                    return;
+                    return res.status(500).json({ error: 'Error getting item quantity' });
                 }
 
                 if (result.length === 0) {
-                    errorCallback("Product not found"); // Call the errorCallback with the error message
+                   
                     connection.release();
-                    return;
+                    return res.status(404).json({ error: 'Product not found' });
                 }
 
                 const currentQuantity = result[0].quantity;
@@ -108,17 +120,18 @@ const updateItemQuantity = (req, res, errorCallback) => {
 
                 // Ensure that the requested quantity doesn't exceed the available quantity
                 if (requestedQuantity > currentQuantity) {
-                    errorCallback("Not enough quantity available to purchase"); // Call the errorCallback with the error message
+                    
                     connection.release();
-                    return;
+                    return res.status(400).json({ error: 'Not enough quantity available to purchase' });
                 }
 
                 const newQuantity = currentQuantity - requestedQuantity;
 
                 connection.query('UPDATE item SET quantity = ? WHERE iditem = ?', [newQuantity, id], (err, updateResult) => {
                     if (err) {
-                        console.log(err);
-                        errorCallback("Error updating item quantity"); // Call the errorCallback with the error message
+                        console.error(err);
+                        connection.release();
+                        return res.status(500).json({ error: 'Error updating item quantity' });
                     } else {
                         res.status(200).send({ status: 200, data: updateResult, message: "Item quantity updated successfully" });
                     }
@@ -128,7 +141,7 @@ const updateItemQuantity = (req, res, errorCallback) => {
             });
         });
     } else {
-        errorCallback("Invalid data"); // Call the errorCallback with the error message
+        console.log("Invalid data"); // Call the errorCallback with the error message
     }
 }
 
@@ -148,6 +161,7 @@ const deleteItem = (req,res) => {
 exports.addItem = addItem;
 exports.getAllItems = getAllItems;
 exports.getItem = getItem;
+exports.getUnitPrice= getUnitPrice;
 exports.updateItem = updateItem;
 exports.updateItemQuantity = updateItemQuantity;
 exports.deleteItem = deleteItem;

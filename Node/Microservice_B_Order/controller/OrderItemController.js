@@ -35,7 +35,7 @@ async function getOrderItems(req, res) {
   
   async function createOrderItem(req, res) {
     try {
-      const { order_id, product_id, quantity, unit_price } = req.body;
+      const { order_id, product_id, quantity } = req.body;
       const pool = await sql.connect(dbConnection);
   
       // Check if the order exists before creating the order item
@@ -57,21 +57,30 @@ async function getOrderItems(req, res) {
       try {
         // Update inventory
         await axios.patch(inventoryUpdateEndpoint, inventoryUpdateData);
+
+      const fetchUnitPriceEndpoint = `http://localhost:3003/api/inventory/getUnitPrice/${product_id}`;
+      const unitPriceResponse = await axios.get(fetchUnitPriceEndpoint);
+
+      if (unitPriceResponse.status !== 200) {
+        return res.status(unitPriceResponse.status).json({ error: `Error fetching unit price: ${unitPriceResponse.statusText}` });
+      }      
+     
+
+      const unit_price = unitPriceResponse.data.price;
   
         // Calculate subtotal
         const subtotal = quantity * unit_price;
   
         // Inventory update successful, proceed to create the order item
         const insertQuery = `
-          INSERT INTO OrderItems (order_id, product_id, quantity, unit_price, subtotal)
-          VALUES (@order_id, @product_id, @quantity, @unit_price, @subtotal);
+          INSERT INTO OrderItems (order_id, product_id, quantity, subtotal)
+          VALUES (@order_id, @product_id, @quantity, @subtotal);
         `;
         await pool
           .request()
           .input('order_id', sql.Int, order_id)
           .input('product_id', sql.Int, product_id) // check the valid product_id according to inventory
           .input('quantity', sql.Int, quantity)
-          .input('unit_price', sql.Decimal(10, 2), unit_price)
           .input('subtotal', sql.Decimal(10, 2), subtotal)
           .query(insertQuery);
   
@@ -79,15 +88,22 @@ async function getOrderItems(req, res) {
       } catch (inventoryError) {
         // If an error occurred during inventory update, handle it and respond accordingly
         console.error(inventoryError);
-        res.status(500).json({ error: `Error updating inventory: ${inventoryError.message}` });
+        if (inventoryError.response && inventoryError.response.status === 400) {
+          // Handle specific error when there's a bad request (400) from the inventory service
+          res.status(400).json({ error: 'Not enough quantity available to purchase' });
+        } else if (inventoryError.response && inventoryError.response.status === 404) {
+          // Handle specific error when the product is not found (404) in the inventory service
+          res.status(404).json({ error: 'Product not found in inventory' });
+        } else {
+          // Handle other generic inventory update errors
+          res.status(500).json({ error: `Error updating inventory: ${inventoryError.message}` });
+        }
       }
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: `Error creating order item: ${error.message}` });
     }
-  }
-  
-  
+  }    
   
   async function updateOrderItem(req, res) {
     try {
@@ -132,9 +148,7 @@ async function getOrderItems(req, res) {
       console.error(error);
       res.status(500).json({ error: 'Error updating order item' });
     }
-  }
-  
-  
+  }  
   
   async function deleteOrderItem(req, res) {
     try {
@@ -158,7 +172,6 @@ async function getOrderItems(req, res) {
       res.status(500).json({ error: 'Error deleting order item' });
     }
   }
-  
   
 
   module.exports = {

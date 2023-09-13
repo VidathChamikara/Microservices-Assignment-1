@@ -9,7 +9,7 @@ app.use(bodyParser.json());
 
 mongoose.connect('mongodb://127.0.0.1:27017/userManagement')
   .then(() => {
-    console.log("Successfully Connected to the MongoDB Database");
+    console.log("User Management Service Successfully Connected to the MongoDB Database");
   })
   .catch(error => {
     console.log("MongoDB connection error", error);

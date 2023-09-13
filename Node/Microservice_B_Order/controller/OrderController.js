@@ -32,8 +32,7 @@ async function getOrderById(req, res) {
               o.[shipping_address],
               i.[item_id],
               i.[product_id],
-              i.[quantity],
-              i.[unit_price],
+              i.[quantity],             
               i.[subtotal]
           FROM [Order].[dbo].[Orders] AS o
           INNER JOIN [Order].[dbo].[OrderItems] AS i ON o.[order_id] = i.[order_id]
@@ -68,8 +67,7 @@ async function getOrderById(req, res) {
               orderDetails.order_items.push({
                   item_id: row.item_id,
                   product_id: row.product_id,
-                  quantity: row.quantity,
-                  unit_price: row.unit_price,
+                  quantity: row.quantity,                 
                   subtotal: row.subtotal,
               });
           });
@@ -77,8 +75,9 @@ async function getOrderById(req, res) {
           res.json(orderDetails);
       }
   } catch (error) {
-      res.status(500).json({ error: 'Error fetching order' });
-  }
+    console.error('Error fetching order:', error);
+    res.status(500).json({ error: 'Error fetching order' });
+}
 }
 
 
@@ -88,14 +87,13 @@ async function createOrder(req, res) {
     const { user_id, order_date, total_amount, status, payment_status, shipping_address } = req.body;
     const pool = await sql.connect(dbConnection);
 
-    const query = `INSERT INTO ${OrderSchema.name} (user_id, order_date, total_amount, status, payment_status, shipping_address)
-                   VALUES ( @user_id, @order_date, @total_amount, @status, @payment_status, @shipping_address);`;
+    const query = `INSERT INTO ${OrderSchema.name} (user_id, order_date, status, payment_status, shipping_address)
+                   VALUES ( @user_id, @order_date, @status, @payment_status, @shipping_address);`;
 
     const result = await pool.request()
       
       .input('user_id', sql.Int, user_id)//check the user_id acccording user table
-      .input('order_date', sql.DateTime, order_date)
-      .input('total_amount', sql.Decimal(10, 2), total_amount)
+      .input('order_date', sql.DateTime, order_date)      
       .input('status', sql.VarChar(20), status)
       .input('payment_status', sql.VarChar(20), payment_status)
       .input('shipping_address', sql.VarChar(50), shipping_address)

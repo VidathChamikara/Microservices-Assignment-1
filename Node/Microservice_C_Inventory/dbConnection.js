@@ -12,7 +12,7 @@ pool.getConnection(function (err, connection) {
     if (err) {
         return console.error('error: ' + err.message);
     }
-    console.log('Successfully connected to the MySQL database');
+    console.log('Inventory Management Service Successfully connected to the MySQL database');
     connection.release();
 });
 
